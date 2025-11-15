@@ -146,9 +146,9 @@ body {
 }
 
 .error-message {
-    background-color: #fdebe
-    color: #f03d25;
-    border: 1px solid #f03d25;
+    background-color: #fdebea;
+    color: #c0392b;
+    border: 1px solid #c0392b;
 }
 
 .success-message {

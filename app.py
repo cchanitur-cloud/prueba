@@ -1,37 +1,83 @@
+import os
+import logging
+
 from flask import Flask, request, render_template, redirect, url_for, session, flash
 from flask_bcrypt import Bcrypt
 from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from itsdangerous import URLSafeTimedSerializer as Serializer
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
-# Clave secreta para sesiones
-app.secret_key = "advpjsh"
+logging.basicConfig(level=logging.INFO)
 
-# Configuración de MongoDB Atlas
-client = MongoClient("mongodb+srv://cchanitur_db_user:PmQ8to2aPpo3jq5P@uwu.klewztl.mongodb.net/?appName=UwU")
-db = client['cchanitur_db_user'] #Nombre de tu base de datos aquí
-collection = db['USUARIOS'] #Nombre de tu colección aquí
+# Clave secreta para sesiones
+app.secret_key = os.getenv("SECRET_KEY", "advpjsh")
+
+
+def create_user_collection():
+    """Inicializa la conexión a MongoDB y devuelve la colección de usuarios."""
+    mongo_uri = os.getenv("MONGO_URI")
+    if not mongo_uri:
+        # Permite desarrollo local sin variables de entorno configuradas
+        mongo_db = os.getenv("MONGO_DB_NAME", "cchanitur_db_user")
+        mongo_uri = f"mongodb://localhost:27017/{mongo_db}"
+        app.logger.warning(
+            "MONGO_URI no está configurado. Se usará una instancia local de MongoDB (%s)",
+            mongo_uri,
+        )
+
+    try:
+        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+        client.admin.command("ping")
+        db_name = os.getenv("MONGO_DB_NAME", "cchanitur_db_user")
+        collection_name = os.getenv("MONGO_COLLECTION_NAME", "USUARIOS")
+        return client[db_name][collection_name]
+    except (ConnectionFailure, ServerSelectionTimeoutError) as exc:
+        app.logger.error("No se pudo conectar a MongoDB: %s", exc)
+        return None
+
+
+collection = create_user_collection()
 
 # Configuración de SendGrid
-SENDGRID_API_KEY = 'enlace de la API de SendGrid aquí' 
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+SENDGRID_FROM_EMAIL = os.getenv('SENDGRID_FROM_EMAIL')
 
 # Serializador para crear y verificar tokens
 serializer = Serializer(app.secret_key, salt='password-reset-salt')
 
+
+def ensure_collection_available():
+    """Verifica que la colección esté disponible antes de operar."""
+    if collection is None:
+        flash(
+            "No se puede establecer conexión con la base de datos en este momento. Intenta nuevamente más tarde.",
+            "error",
+        )
+        return False
+    return True
+
 # Función para enviar correos
 def enviar_email(destinatario, asunto, cuerpo):
+    if not SENDGRID_API_KEY or not SENDGRID_FROM_EMAIL:
+        app.logger.warning("SendGrid no está configurado. Mensaje no enviado: %s", asunto)
+        return
+
     mensaje = Mail(
-        from_email='tu correo remitente que creaste en SendGrid aquí',  # Cambia esto por tu correo
+        from_email=SENDGRID_FROM_EMAIL,
         to_emails=destinatario,
         subject=asunto,
         html_content=cuerpo
     )
     try:
-        sg = SendGridAPIClient(SENDGRID_API_KEY)  # Usa tu clave API de SendGrid directamente
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(mensaje)
         print(f"Correo enviado con éxito! Status code: {response.status_code}")
     except Exception as e:
@@ -46,13 +92,16 @@ def home():
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
+        if not ensure_collection_available():
+            return render_template('register.html')
+
         usuario = request.form['usuario']
         email = request.form['email']
         contrasena = request.form['contrasena']
 
         # Verificar si el correo ya está registrado
         if collection.find_one({'email': email}):
-            flash("El correo electrónico ya está registrado.")
+            flash("El correo electrónico ya está registrado.", "error")
             return redirect(url_for('registro'))
 
         # Hashear la contraseña
@@ -73,6 +122,9 @@ def registro():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        if not ensure_collection_available():
+            return render_template('login.html')
+
         usuario = request.form['usuario']
         contrasena = request.form['contrasena']
 
@@ -84,7 +136,7 @@ def login():
             session['usuario'] = usuario
             return redirect(url_for('pagina_principal'))
         else:
-            flash("Usuario o contraseña incorrectos.")
+            flash("Usuario o contraseña incorrectos.", "error")
             return render_template('login.html')
 
     return render_template('login.html')
@@ -99,7 +151,10 @@ def pagina_principal():
 def mi_perfil():
     if 'usuario' not in session:
         return redirect(url_for('login'))
-    
+
+    if not ensure_collection_available():
+        return redirect(url_for('pagina_principal'))
+
     usuario = session['usuario']
     user_data = collection.find_one({'usuario': usuario})
     return render_template('mi_perfil.html', usuario=user_data['usuario'], email=user_data['email'])
@@ -107,6 +162,9 @@ def mi_perfil():
 @app.route('/recuperar_contrasena', methods=['GET', 'POST'])
 def recuperar_contrasena():
     if request.method == 'POST':
+        if not ensure_collection_available():
+            return render_template('recuperar_contrasena.html')
+
         email = request.form['email']
         usuario = collection.find_one({'email': email})
 
@@ -136,6 +194,9 @@ def restablecer_contrasena(token):
         return redirect(url_for('recuperar_contrasena'))
 
     if request.method == 'POST':
+        if not ensure_collection_available():
+            return render_template('restablecer_contrasena.html')
+
         nueva_contrasena = request.form['nueva_contrasena']
         hashed_password = bcrypt.generate_password_hash(nueva_contrasena).decode('utf-8')
         collection.update_one({'email': email}, {'$set': {'contrasena': hashed_password}})
