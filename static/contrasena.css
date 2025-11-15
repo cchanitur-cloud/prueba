@@ -1,0 +1,116 @@
+/* Global Styles */
+body {
+    background-color: #f0f2f5;
+    color: #1c1e21;
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Container */
+.container {
+    background: #ffffff;
+    padding: 25px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+/* Form */
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 24px;
+    color: #1c1e21;
+    font-weight: 600;
+}
+
+p {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 16px;
+    color: #606770;
+}
+
+
+/* Form Fields */
+.form-group {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+.form-group .icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #90949c;
+    font-size: 16px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 14px 14px 14px 45px;
+    border: 1px solid #dddfe2;
+    border-radius: 6px;
+    background-color: #f5f6f7;
+    color: #1c1e21;
+    font-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #1877f2;
+    box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+    background-color: #ffffff;
+}
+
+.form-group input::placeholder {
+    color: #90949c;
+}
+
+/* Buttons */
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 6px;
+    background-color: #1877f2;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #166fe5;
+}
+
+/* Flash Messages */
+.flash-message {
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 15px;
+}
+
+.error-message {
+    background-color: #fdebe
+    color: #f03d25;
+    border: 1px solid #f03d25;
+}
+
+.success-message {
+    background-color: #eaf7e9;
+    color: #42b72a;
+    border: 1px solid #42b72a;
+}

@@ -1,0 +1,91 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* Profile Container */
+.profile-container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 30px 40px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.profile-container h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 30px;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: #ffffff;
+    font-size: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 30px;
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.4);
+}
+
+.profile-info {
+    text-align: left;
+}
+
+.profile-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #555;
+}
+
+.profile-item i {
+    font-size: 22px;
+    color: #3498db;
+    margin-right: 15px;
+    width: 30px;
+    text-align: center;
+}
+
+.profile-item .label {
+    font-weight: 600;
+    color: #2c3e50;
+    width: 100px;
+}
+
+.profile-item .value {
+    font-weight: 500;
+    color: #34495e;
+}
+
+/* Back Button */
+.btn-back {
+    display: inline-block;
+    margin-top: 30px;
+    background-color: #3498db;
+    color: #ffffff;
+    padding: 12px 25px;
+    font-size: 16px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.3s, transform 0.2s;
+    font-weight: 600;
+}
+
+.btn-back:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
